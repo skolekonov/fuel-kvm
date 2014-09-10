@@ -9,7 +9,7 @@ CONF='
        {"opt":"n",
         "opt_long": "name",
         "arg": ":",
-        "man": "Env name and prefix for the VM name. (Default: test)"
+        "man": "Env name and prefix for the VM name. (mandatory option)"
        },
        {"opt":"c",
         "opt_long": "cpu",
@@ -50,9 +50,9 @@ function parse_args {
     local _CONF=${1-$CONF}
     local _ARGS=${2-$ARGS}
 
-    parse_default_args "$_CONF" "$_ARGS"
+    parse_default_args "${_CONF}" "${_ARGS}"
 
-    eval set -- "$ARGS"
+    eval set -- "${ARGS}"
 
     while true ; do
         case "$1" in
@@ -67,24 +67,25 @@ function parse_args {
 
             # Exit
             --) shift ; break ;;
-            *) echo "Internal error!" ; exit 1 ;;
+            *)  usage ; exit 1;;
         esac
     done
 
-    echo "Remaining arguments:"
-    for arg do echo '--> '"\`$arg'" ; done
+    #echo "Remaining arguments:"
+    #for arg do echo '--> '"\`${arg}'" ; done
 }
 
+parse_args "${CONF}" "${ARGS}"
 
-if [[ $USER != "root" ]]
+if [[ ${USER} != "root" ]]
 then
     echo "This script should be run with root priveleges."
+    echo "Terminating..."
     exit 1
 fi
 
-parse_args "$CONF" "$ARGS"
-
-NAME=${NAME:-"test"}-fuel-slave-$RANDOM
+NAME=${NAME?"--name is mandatory option. use --help for more details"}
+NAME=${NAME}-fuel-slave-$RANDOM
 RAM=${RAM:-4096}
 CPU=${CPU:-2}
 DISK=${DISK:-"40G"}
@@ -112,16 +113,16 @@ echo
 create_disk ${NAME} ${DISK}
 
 virt-install \
-  --name=$NAME \
+  --name=${NAME} \
   --cpu host \
-  --ram=$RAM \
-  --vcpus=$CPU,cores=$CPU \
+  --ram=${RAM} \
+  --vcpus=${CPU},cores=${CPU} \
   --os-type=linux \
   --os-variant=rhel6 \
   --virt-type=kvm \
   --pxe \
   --boot network,hd \
-  --disk "/var/lib/libvirt/images/$NAME.qcow2" \
+  --disk "/var/lib/libvirt/images/${NAME}.qcow2" \
   --noautoconsole \
   --network network=internal,model=virtio \
   --network network=internal,model=virtio \
@@ -129,11 +130,11 @@ virt-install \
   --network network=internal,model=virtio \
   --graphics vnc,listen=0.0.0.0
 
-virsh destroy $NAME
-setup_network $NAME $PXE_VLAN
-setup_network $NAME $MGMT_VLAN
-setup_network $NAME $STRG_VLAN
+virsh destroy ${NAME}
+setup_network ${NAME} ${PXE_VLAN}
+setup_network ${NAME} ${MGMT_VLAN}
+setup_network ${NAME} ${STRG_VLAN}
 
-virsh start $NAME
-echo "Started fuel-slave $NAME"
+virsh start ${NAME}
+echo "Started fuel-slave ${NAME}"
 

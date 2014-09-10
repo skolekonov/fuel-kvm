@@ -11,7 +11,7 @@ CONF='
        {"opt":"n",
         "opt_long": "name",
         "arg": ":",
-        "man": "Env name and prefix for the VM name. (Default: test)"
+        "man": "Env name and prefix for the VM name.(mandatory option)"
        },
        {"opt":"c",
         "opt_long": "cpu",
@@ -47,9 +47,9 @@ function parse_args {
     local _CONF=${1-$CONF}
     local _ARGS=${2-$ARGS}
 
-    parse_default_args "$_CONF" "$_ARGS"
+    parse_default_args "${_CONF}" "${_ARGS}"
 
-    eval set -- "$ARGS"
+    eval set -- "${ARGS}"
 
     while true ; do
         case "$1" in
@@ -63,28 +63,38 @@ function parse_args {
 
             # Exit
             --) shift ; break ;;
-            *) echo "Internal error!" ; exit 1 ;;
+            *)  usage ; exit 1;;
         esac
     done
 
-    echo "Remaining arguments:"
-    for arg do echo '--> '"\`$arg'" ; done
+    #echo "Remaining arguments:"
+    #for arg do echo '--> '"\`${arg}'" ; done
 }
-
-if [[ $USER != "root" ]]
-then
-    echo "This script should be run with root priveleges."
-    exit 1
-fi
 
 parse_args "$CONF" "$ARGS"
 
+if [[ ${USER} != "root" ]]
+then
+    echo "This script should be run with root priveleges."
+    echo "Terminating..."
+    exit 1
+fi
+
+NAME=${NAME?"--name is mandatory option. use --help for more details"}
 NAME=${NAME:-"test"}-fuel-master
 RAM=${RAM:-2048}
 CPU=${CPU:-1}
 DISK=${DISK:-"40G"}
-ISO=${ISO:-"fuel.iso"}
 PXE_VLAN=${PXE_VLAN?"--pxe_vlan is mandatory option. Use --help for more details"}
+ISO=${ISO:-"fuel.iso"}
+
+if [[ ! -f ${ISO} ]]
+then
+    echo "ISO file \"${ISO}\" does not exist!"
+    echo "Terminating..."
+    exit 1
+fi
+
 
 
 ### Confirm parameters
@@ -106,15 +116,15 @@ create_disk ${NAME} ${DISK}
 echo "Starting Fuel master vm..."
 
 virt-install \
-  --name=$NAME \
+  --name=${NAME} \
   --cpu host \
-  --ram=$RAM \
-  --vcpus=$CPU,cores=$CPU \
+  --ram=${RAM} \
+  --vcpus=${CPU},cores=${CPU} \
   --os-type=linux \
   --os-variant=rhel6 \
   --virt-type=kvm \
-  --disk "/var/lib/libvirt/images/$NAME.qcow2" \
-  --cdrom "$ISO" \
+  --disk "/var/lib/libvirt/images/${NAME}.qcow2" \
+  --cdrom "${ISO}" \
   --noautoconsole \
   --network network=internal,model=virtio \
   --network network=internal,model=virtio \
@@ -124,8 +134,8 @@ GATEWAY_IP=172.18.161.1
 
 while (true)
 do
-    STATUS=$(virsh dominfo $NAME | grep State | awk -F " " '{print $2}')
-    if [ $STATUS == 'shut' ]
+    STATUS=$(virsh dominfo ${NAME} | grep State | awk -F " " '{print $2}')
+    if [ ${STATUS} == 'shut' ]
     then
         setup_iso ${NAME} ${GATEWAY_IP}
         setup_network ${NAME} ${PXE_VLAN}
