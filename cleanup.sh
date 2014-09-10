@@ -8,6 +8,22 @@ fi
 
 PREFIX=$1
 
+echo "You are going to delete all VMs with the following prefix:"
+echo ${PREFIX}
+echo "Do you wish to proceed?"
+select ANS in Yes No; do
+    case $ANS in
+        [yY]*)
+            break;
+            ;;
+        [nN]*|exit)
+            exit 0
+            ;;
+        *)
+            echo "try again: Yes, No"
+    esac
+done
+
 echo "Deleting Fuel Master vm..."
 
 master=$(virsh list --all | grep $PREFIX-fuel-master | awk '{print $2}')
