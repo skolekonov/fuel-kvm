@@ -16,12 +16,12 @@ CONF='
        {"opt":"c",
         "opt_long": "cpu",
         "arg": ":",
-        "man": "CPU Number for VM. (Default: 1)"
+        "man": "CPU Number for VM. (Default: 2)"
        },
        {"opt":"r",
         "opt_long": "ram",
         "arg": ":",
-        "man": "RAM in MB for VM. (Default: 2048)"
+        "man": "RAM in MB for VM. (Default: 4096)"
        },
        {"opt":"d",
         "opt_long": "disk",
