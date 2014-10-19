@@ -1,0 +1,5 @@
+<network>
+  <name>fuel-external</name>
+  <forward mode="bridge"/>
+  <bridge name="br0" />
+</network>
