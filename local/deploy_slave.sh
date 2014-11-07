@@ -21,7 +21,6 @@ echo "Starting Fuel slave vm..."
 
 virt-install \
   --name=$name \
-  --cpu host \
   --ram=$ram \
   --vcpus=$cpu,cores=$cpu \
   --os-type=linux \
@@ -33,6 +32,9 @@ virt-install \
   --network network=fuel-pxe,model=virtio \
   --network network=fuel-public,model=virtio \
   --graphics vnc,listen=0.0.0.0
+#  --cpu host \
+#If cpu parameter is set to "host" with QEMU 2.0 hypervisor
+#it causes critical failure during CentOS installation
 
 virsh destroy $name
 setup_cache $name

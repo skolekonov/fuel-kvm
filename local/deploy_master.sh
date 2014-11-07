@@ -60,7 +60,6 @@ echo "Starting Fuel master vm..."
 
 virt-install \
   --name=$name \
-  --cpu host \
   --ram=$ram \
   --vcpus=$cpu,cores=$cpu \
   --os-type=linux \
@@ -72,6 +71,9 @@ virt-install \
   --network network=fuel-pxe,model=virtio \
   --network network=$external_network,model=virtio \
   --graphics vnc,listen=0.0.0.0
+#  --cpu host \
+#If cpu parameter is set to "host" with QEMU 2.0 hypervisor
+#it causes critical failure during CentOS installation
 
 echo "Use this port to connect to vnc console$(virsh vncdisplay $name)"
 
