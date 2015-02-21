@@ -40,4 +40,4 @@ virsh destroy $name
 setup_cache $name
 virsh start $name
 
-echo "Use this port to connect to vnc console$(virsh vncdisplay $name)"
+echo "VNC port: $(get_vnc $name)"

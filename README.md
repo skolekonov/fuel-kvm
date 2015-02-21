@@ -2,9 +2,10 @@ fuel-kvm-local
 ========
 Description
 ----------------------
-This is a collection of scripts to deploy and test small Fuel clusters locally
+This is a collection of scripts to deploy small Fuel clusters locally
 with default for Fuel network configuration using KVM hypervisor
-(similar to the VirtualBox scripts from fuel-main repo)
+(similar to the VirtualBox scripts from fuel-main repo).
+Currently the only supported distro is Ubuntu.
 
 Fuel cluster deployment
 ----------------------

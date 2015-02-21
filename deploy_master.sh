@@ -1,6 +1,5 @@
 #!/bin/bash
 
-source product.sh
 source functions.sh
 
 if [ $# -ne 5 ]
@@ -30,27 +29,15 @@ virsh vol-create-as --name $name.qcow2 --capacity $size --format qcow2 --allocat
 echo "Creating networks..."
 
 #10.20.0.0/24 - pxe (isolated)
-virsh net-destroy fuel-pxe
-virsh net-undefine fuel-pxe
-virsh net-define fuel-pxe.xml
-virsh net-autostart fuel-pxe
-virsh net-start fuel-pxe
+virsh net-info fuel-pxe &> /dev/null || create_network fuel-pxe
 
 #172.16.0.1/24 - public/floating (NAT)
-virsh net-destroy fuel-public
-virsh net-undefine fuel-public
-virsh net-define fuel-public.xml
-virsh net-autostart fuel-public
-virsh net-start fuel-public
+virsh net-info fuel-public &> /dev/null || create_network fuel-public
 
 if $hosts_bridge
 then
     #directly connected to a host's bridge (br0)
-    virsh net-destroy fuel-external
-    virsh net-undefine fuel-external
-    virsh net-define fuel-external.xml
-    virsh net-autostart fuel-external
-    virsh net-start fuel-external
+    virsh net-info fuel-external &> /dev/null || create_network fuel-external
     external_network=fuel-external
 else
     external_network=default
@@ -75,18 +62,19 @@ virt-install \
 #If cpu parameter is set to "host" with QEMU 2.0 hypervisor
 #it causes critical failure during CentOS installation
 
-echo "Use this port to connect to vnc console$(virsh vncdisplay $name)"
+echo "VNC port: $(get_vnc $name)"
 
 #Fuel master is powered off after CentOS installation
 #We are waiting for this moment to setup the VM and continue deployment
 while (true)
 do
-   STATUS=$(virsh dominfo $name | grep State | awk -F " " '{print $2}')
+   STATUS=$(virsh dominfo $name | grep State | awk '{print $2}')
    if [ $STATUS == 'shut' ]
    then
        #'setup_cache' is a dirty workaround for unsupported 'unsafe' cache mode
        #in older versions of virt-install utility
        setup_cache $name
+       setup_network $name $gateway_ip
        virsh start $name
        break
     fi
@@ -94,16 +82,13 @@ do
 done
 
 echo "CentOS is installed successfully. Running Fuel master deployment..."
-
 vm_master_ip=10.20.0.2
 vm_master_username=root
 vm_master_password=r00tme
-vm_master_prompt='root@fuel ~]#'
+
+echo "VNC port: $(get_vnc $name)"
 
 # Wait until the machine gets installed and Puppet completes its run
-wait_for_product_vm_to_install $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt"
-
-# Enable outbound network/internet access for the machine
-enable_outbound_network_for_product_vm $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" $gateway_ip
+wait_for_product_vm_to_install $vm_master_ip $vm_master_username $vm_master_password || exit 1
 
 echo "Product VM is ready"

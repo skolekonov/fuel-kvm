@@ -20,7 +20,13 @@ case "$OPERATION" in
  "snapshot-nodes")
   echo "Snapshotting nodes..."
   SNAP_NAME=$2
-  for i in $(virsh list | grep fuel-slave- | awk '{print $2}')
+
+  for i in $(virsh list | grep fuel- | awk '{print $2}')
+  do
+    virsh suspend $i
+  done
+
+  for i in $(virsh list | grep fuel- | awk '{print $2}')
   do
     virsh snapshot-create-as $i $SNAP_NAME
   done
@@ -28,10 +34,17 @@ case "$OPERATION" in
   "revert-nodes")
   echo "Reverting nodes..."
   SNAP_NAME=$2
-  for i in $(virsh list | grep fuel-slave- | awk '{print $2}')
+
+  for i in $(virsh list | grep fuel- | awk '{print $2}')
   do
     virsh snapshot-revert $i $SNAP_NAME
   done
+
+  for i in $(virsh list | grep fuel- | awk '{print $2}')
+  do
+    virsh resume $i
+  done
+
  ;;
   *)
   echo "Unsupported command"
