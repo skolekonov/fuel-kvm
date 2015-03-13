@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function check_packages {
-    PACKAGES="sshpass qemu-utils lvm2 libvirt-bin virtinst qemu-kvm"
+    PACKAGES="sshpass qemu-utils lvm2 libvirt-bin virtinst qemu-kvm e2fsprogs"
     for i in $PACKAGES; do
        dpkg -s $i &> /dev/null || apt-get install -y $i
     done
@@ -15,17 +15,19 @@ function create_network {
 }
 
 function setup_network {
-	TMPD=$(mktemp -d)
+    TMPD=$(mktemp -d)
     IMAGE_PATH=/var/lib/libvirt/images
     name=$1
     gateway_ip=$2
-	modprobe nbd max_part=63
-	qemu-nbd -n -c /dev/nbd0 $IMAGE_PATH/$name.qcow2
-	vgscan --mknode
-	vgchange -ay os
-	mount /dev/os/root $TMPD
-	sed "s/GATEWAY=.*/GATEWAY=\"$gateway_ip\"/g" -i $TMPD/etc/sysconfig/network
-        echo "
+    modprobe nbd max_part=63
+    qemu-nbd -n -c /dev/nbd0 $IMAGE_PATH/$name.qcow2
+    sleep 2
+    vgscan --mknode
+    vgchange -ay os
+    sleep 2
+    mount /dev/os/root $TMPD
+    sed "s/GATEWAY=.*/GATEWAY=\"$gateway_ip\"/g" -i $TMPD/etc/sysconfig/network
+    echo "
 DEVICE=eth1
 TYPE=Ethernet
 ONBOOT=yes
@@ -34,9 +36,9 @@ BOOTPROTO=dhcp
 PEERDNS=no" > $TMPD/etc/sysconfig/network-scripts/ifcfg-eth1
     #Fuel 6.1 displays network setup menu by default
     sed -i 's/showmenu=yes/showmenu=no/g' $TMPD/root/.showfuelmenu
-	umount $TMPD
-	vgchange -an os
-	qemu-nbd -d /dev/nbd0
+    umount $TMPD
+    vgchange -an os
+    qemu-nbd -d /dev/nbd0
 }
 
 function setup_cache {

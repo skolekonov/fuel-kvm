@@ -52,7 +52,7 @@ virt-install \
   --os-type=linux \
   --os-variant=rhel6 \
   --virt-type=kvm \
-  --disk "/var/lib/libvirt/images/$name.qcow2",cache=writeback,bus=virtio \
+  --disk "/var/lib/libvirt/images/$name.qcow2",cache=writeback,bus=virtio,serial=$(uuidgen) \
   --cdrom "$iso_path" \
   --noautoconsole \
   --network network=fuel-pxe,model=virtio \

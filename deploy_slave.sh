@@ -27,7 +27,7 @@ virt-install \
   --virt-type=kvm \
   --pxe \
   --boot network,hd \
-  --disk "/var/lib/libvirt/images/$name.qcow2",cache=writeback,bus=virtio \
+  --disk "/var/lib/libvirt/images/$name.qcow2",cache=writeback,bus=virtio,serial=$(uuidgen) \
   --noautoconsole \
   --network network=fuel-pxe,model=virtio \
   --network network=fuel-public,model=virtio \
