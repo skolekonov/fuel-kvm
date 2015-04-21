@@ -29,8 +29,8 @@ virt-install \
   --boot network,hd \
   --disk "/var/lib/libvirt/images/$name.qcow2",cache=writeback,bus=virtio,serial=$(uuidgen) \
   --noautoconsole \
-  --network network=fuel-pxe,model=virtio \
-  --network network=fuel-public,model=virtio \
+  --network network=fuel-pxe,model=e1000 \
+  --network network=fuel-public,model=e1000 \
   --graphics vnc,listen=0.0.0.0
 #  --cpu host \
 #If cpu parameter is set to "host" with QEMU 2.0 hypervisor
