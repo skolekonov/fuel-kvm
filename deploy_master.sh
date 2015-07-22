@@ -13,6 +13,7 @@ name=$2
 ram=$3
 cpu=$4
 size=$5
+net_driver=${net_driver:-e1000}
 #Use user-defined bridge to setup external network for Fuel Master node
 #Bridge name is hardcoded to 'br0', edit xml files to change
 #libvirt's "default" NAT network will be used if there's no bridge
@@ -55,8 +56,8 @@ virt-install \
   --disk "/var/lib/libvirt/images/$name.qcow2",cache=writeback,bus=virtio,serial=$(uuidgen) \
   --cdrom "$iso_path" \
   --noautoconsole \
-  --network network=fuel-pxe,model=e1000 \
-  --network network=$external_network,model=e1000 \
+  --network network=fuel-pxe,model=$net_driver \
+  --network network=$external_network,model=$net_driver \
   --graphics vnc,listen=0.0.0.0
 #  --cpu host \
 #If cpu parameter is set to "host" with QEMU 2.0 hypervisor

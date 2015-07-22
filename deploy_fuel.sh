@@ -8,6 +8,9 @@ then
   exit 1
 fi
 
+#Set virtual interfaces driver for VMs
+#export net_driver=virtio
+
 #Fuel master node
 master_name=fuel-master #currently hardcoded in cleanup script
 master_ram=1024

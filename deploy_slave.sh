@@ -12,6 +12,7 @@ name=$1
 ram=$2
 cpu=$3
 size=$4
+net_driver=${net_driver:-e1000}
 
 echo "Creating storage..."
 
@@ -29,8 +30,8 @@ virt-install \
   --boot network,hd \
   --disk "/var/lib/libvirt/images/$name.qcow2",cache=writeback,bus=virtio,serial=$(uuidgen) \
   --noautoconsole \
-  --network network=fuel-pxe,model=e1000 \
-  --network network=fuel-public,model=e1000 \
+  --network network=fuel-pxe,model=$net_driver \
+  --network network=fuel-public,model=$net_driver \
   --graphics vnc,listen=0.0.0.0
 #  --cpu host \
 #If cpu parameter is set to "host" with QEMU 2.0 hypervisor
