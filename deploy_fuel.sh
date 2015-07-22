@@ -15,7 +15,7 @@ fi
 master_name=fuel-master #currently hardcoded in cleanup script
 master_ram=1024
 master_cpu=1
-master_disk=30G
+master_disk=50G
 iso_path=$1
 
 #Cluster nodes
