@@ -32,8 +32,7 @@ DEVICE=eth1
 TYPE=Ethernet
 ONBOOT=yes
 NM_CONTROLLED=no
-BOOTPROTO=dhcp
-PEERDNS=no" > $TMPD/etc/sysconfig/network-scripts/ifcfg-eth1
+BOOTPROTO=dhcp" > $TMPD/etc/sysconfig/network-scripts/ifcfg-eth1
     #Fuel 6.1 displays network setup menu by default
     sed -i 's/showmenu=yes/showmenu=no/g' $TMPD/root/.showfuelmenu
     umount $TMPD
