@@ -33,8 +33,12 @@ TYPE=Ethernet
 ONBOOT=yes
 NM_CONTROLLED=no
 BOOTPROTO=dhcp" > $TMPD/etc/sysconfig/network-scripts/ifcfg-eth1
-    #Fuel 6.1 displays network setup menu by default
-    sed -i 's/showmenu=yes/showmenu=no/g' $TMPD/root/.showfuelmenu
+    #Fuel 6.1 and newer displays network setup menu by default
+    if [ -f ${TMPD}/root/.showfuelmenu ]; then
+      sed -i 's/showmenu=yes/showmenu=no/g' ${TMPD}/root/.showfuelmenu || true
+    else
+      sed -i 's/showmenu=yes/showmenu=no/g' ${TMPD}/etc/fuel/bootstrap_admin_node.conf || true
+    fi
     umount $TMPD
     vgchange -an os
     qemu-nbd -d /dev/nbd0
