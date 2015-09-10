@@ -22,7 +22,7 @@ iso_path=$1
 node_name=fuel-slave #currently hardcoded in cleanup script
 node_ram=2048
 node_cpu=1
-node_size=50G
+node_size=75G
 node_count=$2
 
 #Check and install required packages
@@ -33,7 +33,7 @@ remove_master
 remove_slaves
 
 #Deploy Fuel master node
-bash deploy_master.sh $iso_path $master_name $master_ram $master_cpu $master_disk || exit 1
+./deploy_master.sh $iso_path $master_name $master_ram $master_cpu $master_disk || exit 1
 
 #Start slaves
 if [ $node_count -eq 0 ]; then
@@ -42,7 +42,7 @@ else
   echo "Starting slaves..."
   for (( i=1; i<=$node_count; i++ ))
   do
-     bash deploy_slave.sh $node_name-$RANDOM $node_ram $node_cpu $node_size
+     ./deploy_slave.sh $node_name-$RANDOM $node_ram $node_cpu $node_size
   done
 fi
 

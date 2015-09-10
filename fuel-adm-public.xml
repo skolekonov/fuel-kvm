@@ -1,0 +1,5 @@
+<network>
+  <name>fuel-adm-public</name>
+  <bridge name="fuel-adm-public" />
+  <ip address="172.16.1.1" netmask="255.255.255.0"/>
+</network>

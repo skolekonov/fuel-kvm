@@ -25,6 +25,7 @@ fi
 echo "Creating storage..."
 
 virsh vol-create-as --name $name.qcow2 --capacity $size --format qcow2 --allocation $size --pool default
+pool_path=$(get_pool_path default)
 
 echo "Starting Fuel slave vm..."
 
@@ -36,7 +37,7 @@ virt-install \
   --virt-type=kvm \
   --pxe \
   --boot network,hd \
-  --disk "/var/lib/libvirt/images/$name.qcow2",cache=writeback,bus=virtio,serial=$(uuidgen) \
+  --disk "$pool_path/$name.qcow2",cache=writeback,bus=virtio,serial=$(uuidgen) \
   --noautoconsole \
   --network network=fuel-pxe,model=$net_driver \
   --network network=$external_network,model=$net_driver \

@@ -2,13 +2,32 @@
 
 function check_packages {
     PACKAGES="sshpass qemu-utils lvm2 libvirt-bin virtinst qemu-kvm e2fsprogs"
+    apt-get update
     for i in $PACKAGES; do
-       dpkg -s $i &> /dev/null || apt-get install -y $i
+       dpkg -s $i &> /dev/null || apt-get install -y --force-yes $i
     done
+}
+
+function get_pool_path {
+    local pool=$1
+    local path
+    virsh pool-info $pool &>/dev/null || return
+    path=$(virsh pool-dumpxml $pool | sed -n '/path/{s/.*<path>\(.*\)<\/path>.*/\1/;p}')
+    echo $path
+}
+
+function create_pool {
+    local path="/var/lib/libvirt/images"
+    virsh pool-define-as default dir - - - - "$path"
+    virsh pool-build default
+    virsh pool-start default
+    virsh pool-autostart default
 }
 
 function create_network {
     local NET=$1
+    virsh net-destroy ${NET} 2> /dev/null || true
+    virsh net-undefine ${NET} 2> /dev/null || true
     virsh net-define ${NET}.xml
     virsh net-autostart ${NET}
     virsh net-start ${NET}
@@ -16,7 +35,7 @@ function create_network {
 
 function setup_network {
     TMPD=$(mktemp -d)
-    IMAGE_PATH=/var/lib/libvirt/images
+    IMAGE_PATH=$(get_pool_path default)
     name=$1
     gateway_ip=$2
     modprobe nbd max_part=63
@@ -27,12 +46,7 @@ function setup_network {
     sleep 2
     mount /dev/os/root $TMPD
     sed "s/GATEWAY=.*/GATEWAY=\"$gateway_ip\"/g" -i $TMPD/etc/sysconfig/network
-    echo "
-DEVICE=eth1
-TYPE=Ethernet
-ONBOOT=yes
-NM_CONTROLLED=no
-BOOTPROTO=dhcp" > $TMPD/etc/sysconfig/network-scripts/ifcfg-eth1
+    cp ifcfg-eth1 $TMPD/etc/sysconfig/network-scripts/
     #Fuel 6.1 and newer displays network setup menu by default
     if [ -f ${TMPD}/root/.showfuelmenu ]; then
       sed -i 's/showmenu=yes/showmenu=no/g' ${TMPD}/root/.showfuelmenu || true
@@ -105,6 +119,8 @@ function remove_master () {
          virsh undefine $NAME
          virsh vol-delete --pool default fuel-master.qcow2
      fi
+     pool_path=$(get_pool_path default)
+     if [ -z "$pool_path" ]; then return; fi
      master=$(virsh vol-list --pool default | grep fuel-master | awk '{print $2}')
      if [ ! -z $master ]
      then
@@ -124,6 +140,8 @@ function remove_slaves () {
       virsh undefine $i
    done
 
+   pool_path=$(get_pool_path default)
+   if [ -z "$pool_path" ]; then return; fi
    for i in $(virsh vol-list --pool default | grep fuel-slave- | awk '{print $1}')
    do
       virsh vol-delete --pool default $i
