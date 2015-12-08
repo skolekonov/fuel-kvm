@@ -45,7 +45,10 @@ function setup_network {
     vgchange -ay os
     sleep 2
     mount /dev/os/root $TMPD
-    sed "s/GATEWAY=.*/GATEWAY=\"$gateway_ip\"/g" -i $TMPD/etc/sysconfig/network
+    echo -n "" > ${TMPD}/etc/sysconfig/network
+    for i in "NETWORKING=yes" "HOSTNAME=fuel.domain.tld" "GATEWAY=$gateway_ip" ; do
+      echo ${i} >> ${TMPD}/etc/sysconfig/network
+    done
     cp ifcfg-eth1 $TMPD/etc/sysconfig/network-scripts/
     #Fuel 6.1 and newer displays network setup menu by default
     if [ -f ${TMPD}/root/.showfuelmenu ]; then
