@@ -13,14 +13,14 @@ fi
 
 #Fuel master node
 master_name=fuel-master #currently hardcoded in cleanup script
-master_ram=1024
-master_cpu=1
+master_ram=3072
+master_cpu=2
 master_disk=50G
 iso_path=$1
 
 #Cluster nodes
 node_name=fuel-slave #currently hardcoded in cleanup script
-node_ram=2048
+node_ram=3072
 node_cpu=1
 node_size=75G
 node_count=$2
